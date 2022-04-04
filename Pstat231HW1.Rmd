@@ -2,29 +2,179 @@
 title: "Pstat231HW1"
 author: "Zihao Yang"
 date: '2022-04-03'
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: inline
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+```{r setup, echo=FALSE}
+library(knitr)
+# set global chunk options: images will be 7x5 inches
+knitr::opts_chunk$set(fig.width=7, fig.height=5)
+options(digits = 8)
+
+
+## indents are for indenting r code as formatted text
+## They may need to be adjusted depending on your OS
+# if your output looks odd, increase or decrease indent
+indent1 = '    '
+indent2 = '        '
+indent3 = '            '
 ```
 
-## R Markdown
+```{r}
+#install.packages("tidyverse")
+#install.packages("tidymodels")
+#install.packages("ISLR")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+library(tidyverse)
+library(tidymodels)
+library(ISLR)
+```
+Q1
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Supervised learning: The actual data of response Y is known, so it can serve as the supervisor of the supervised learning. Comparing the actual data of response Y with predicted response Y, we can determine the accuary of our models. With predictors, we can accurately predict future response, understand how predictors affect response, find the “best” model for response, and assess the quality of our predictions and (or) estimation. It works with well labeled data.
 
-```{r cars}
-summary(cars)
+Unsupervised learning: We don't know the actual data of response Y. We only know the predictors, so there is no supervisor in this type of learning. It deals with unlabeled data.
+
+Difference: The difference between supervised and unsupervised is whether there is a supervisor or not. Here the supervisor is the actual data of response Y. If we have the actual Y, then the data is well labeled and it is supervised learning. If we don't have the actual Y, then the data is not well labeled and it should be unsupervised learning.
+
+
+Q2
+
+In the context of the machine learning, classification is the task of predicting a discrete class label(categorical or qualitative), while regression is the task of predicting a continuous quantity(quantitative).
+
+Q3
+
+According to the office hour, we don't need to answer Q3.
+
+Q4
+
+Descriptive models: Choose model to best visually emphasize a trend in data. i.e. using a line on
+a scatter plot.(from lecture)
+
+Inferential models: Aim is to test theories, (Possibly) causal claims, State relationship between outcome & predictor(s). (from lecture)
+
+Predictive models: Aim is to predict Y with minimum reducible error. Not focused on hypothesis tests. (from lecture)
+
+Q5
+
+Mechanistic: We assume a parametric form for function f, we can choose any suitable models according to the assumptions and estimate the coefficients. It won't match the true unknown f. It can also add parameters which means more flexibility. 
+
+Empirically-driven:There is no assumptions about function f, and it requires a large number of observations. It has much more flexibility by default.
+
+Mechanistic needs an assumption for f, while empirically-driven doesn't require that. Empirically-driven is more flexible than mechanistic by default. But they are both over fitting.
+
+I would say mechanistic is easier to understand, because we can use our familiar models to make assumptions. If it is not suitable, then we can make revise and select a better model. Comparing to the empirically-driven that without assumption, mechanistic is much easier to find a way to start approach. It is more controllable. 
+
+
+Q6
+
+1)Given a voter’s profile/data, how likely is it that they will vote in favor of the candidate?
+
+This should be predictive, because it aims at predicting Y, which is how likely they will vote in favor of the candidate, based on the voter's data, with minimum reducible error. And it is not focused on hypothesis tests.
+
+2)How would a voter’s likelihood of support for the candidate change if they had personal contact with the candidate?
+
+This should be inferential, because it aims at testing a theory. We want to know about the relationship between the personal contact and the likelihood of support for the candidate.
+
+Exercise Part
+```{r}
+library(ggplot2)
+head(mpg)
+```
+Exercise 1
+```{r}
+ggplot(mpg,aes(hwy))+geom_histogram(bins = 100)
+```
+According to the histogram, most cars have the highway mpg between 15-20 and 22-30. The two most frequent are at 17 and 26. The data is following bimodal pattern.
+
+\newpage
+Exercise 2
+```{r}
+ggplot(mpg,aes(x=hwy,y=cty))+geom_point()
+```
+The scattered points locate along an increasing line, which indicates that there is a positive relationship between hwy and cty. As hwy increases, cty increases.
+
+\newpage
+Exercise 3
+```{r}
+ggplot(mpg,aes(y=reorder(manufacturer, manufacturer, function(y) length(y))))+geom_bar(stat = "count")
+```
+From the bar plot above, we can see Dodge produced most cars, and Lincoln produced least cars.
+
+\newpage
+Exercise 4
+```{r}
+ggplot(mpg, aes(hwy,group=cyl))+geom_boxplot()
+```
+I notice that the less in cylinders,the higher values in highway mpg. It is a negative correlation between them.
+
+\newpage
+Exercise 5
+```{r}
+#install.packages("corrplot")
+library(corrplot)
+M <- mpg %>% select_if(is.numeric) %>% cor(.)
+corrplot(M, method = 'number', type = 'lower')
+```
+Positive correlated: 
+Displ with cyl,
+Cty mpg with hwy mpg.
+
+Negative correlated: 
+Cty mpg with Displ, 
+hwy mpg with Displ,
+cyl with cty mpg,
+cyl with hwy mpg.
+
+I think they all very make sense. More cylinders lead to more engine displacement. Cty and hwy mpg are positively correlated, because the they are determined by the performance of the car. Also more cylinders lead to low mpg(as in exercise 4). And lower mpg correlate with high engine displacement.
+
+\newpage
+Exercise 6
+```{r}
+#install.packages("ggthemes")
+library(ggthemes)
+ggplot(mpg, aes(hwy,class))+geom_boxplot(outlier.size = 1)+
+  geom_jitter(shape = 16, position = position_jitter(width = 0.1), alpha = 0.3,size=1)+
+  ylab("Vehicle Class")+xlab("Highway MPG")+theme_bw()
+```
+\newpage
+Exercise 7
+```{r}
+ggplot(mpg,aes(class, hwy, fill=drv))+geom_boxplot()
+```
+\newpage
+Exercise 8
+```{r}
+ggplot(mpg,aes(displ,hwy))+geom_point(aes(colour=drv))+geom_smooth(aes(linetype=drv),se=FALSE)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
